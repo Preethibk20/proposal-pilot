@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ProposalPilot
 
-## Getting Started
+**Client proposals powered by your own Claude — with zero AI inside the app.**
 
-First, run the development server:
+ProposalPilot lets freelancers and agencies connect their own Claude account via **MCP (Model Context Protocol)**. Paste messy discovery call notes into Claude, and Claude drafts a structured proposal directly into your ProposalPilot workspace. You review and edit it in your dashboard, publish it, and share a live link where your client can **Accept & Sign** or **Request Changes**.
+
+- **Zero AI cost:** No OpenAI, Anthropic, Gemini, or other AI SDKs/keys anywhere in this codebase.
+- **Human in the loop:** Claude can only create/update drafts; only the human agency can publish.
+- **Live & persistent:** Public client links, view tracking, electronic acceptance + timestamp/IP, and print-to-PDF support.
+
+---
+
+## Tech Stack
+
+- **Framework:** Next.js (App Router) + TypeScript + Tailwind CSS
+- **Database & Auth:** Supabase (Postgres + Row Level Security + Email/Password Auth)
+- **MCP Server:** `@modelcontextprotocol/sdk` (`WebStandardStreamableHTTPServerTransport`) at `/api/mcp/[token]`
+- **Validation:** `zod`
+- **Hosting:** Vercel
+
+---
+
+## 1. Supabase Setup
+
+1. Create a new project at [supabase.com](https://supabase.com).
+2. Open **SQL Editor** in your Supabase dashboard and run the entire contents of [`supabase/migrations/0001_initial_schema.sql`](./supabase/migrations/0001_initial_schema.sql).
+   - This creates the `agencies` and `proposals` tables, `updated_at` triggers, automatic agency profile creation on signup, and **Row Level Security (RLS)** policies.
+3. In **Authentication → Providers → Email**, ensure Email/Password is enabled. (For instant local testing without email verification, you can disable *"Confirm email"* under **Authentication → Providers → Email**.)
+4. Copy your Project URL, `anon` public key, and `service_role` secret key from **Project Settings → API**.
+
+---
+
+## 2. Local Setup
+
+```bash
+cd proposal-pilot
+npm install
+cp .env.example .env.local
+```
+
+Fill in `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+Seed the demo account (`demo@proposalpilot.app` / `Demo@12345`) and sample published proposal:
+
+```bash
+npm run seed
+```
+
+Start the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 3. Deploy to Vercel
 
-## Learn More
+1. Push the `proposal-pilot` repository to GitHub (or deploy directly with `npx vercel`).
+2. In Vercel Project Settings → **Environment Variables**, add:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `NEXT_PUBLIC_APP_URL` (set to your live `https://your-app.vercel.app` URL)
+3. Deploy!
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 4. How to Connect to Claude (MCP)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Sign in to ProposalPilot and go to **MCP Settings** (`/settings`).
+2. Copy your private MCP URL: `https://<your-domain>/api/mcp/<your-token>`.
+   *(Note: Claude's web connector requires a public HTTPS URL such as your Vercel deployment or an ngrok tunnel for local testing.)*
+3. In **Claude**, go to **Settings → Connectors → Add custom connector**.
+4. Name it **ProposalPilot** and paste your MCP URL.
+5. Start a new chat in Claude and try this prompt:
 
-## Deploy on Vercel
+```text
+Turn these call notes into a proposal for Acme Corp: logo + brand kit for $3,500, 3 weeks. Notes: They need a primary logo, color palette, typography system, and brand guidelines PDF. 50% upfront, 50% on final delivery.
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Claude will call `create_proposal` and return your `dashboard_url`. Open it, edit any details, click **Publish**, and share the public `/p/[slug]` link with your client!
