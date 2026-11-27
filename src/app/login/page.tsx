@@ -32,7 +32,6 @@ export default function LoginPage() {
       }
 
       router.push("/dashboard");
-      router.refresh();
     } catch {
       setError("Unexpected error signing in. Please try again.");
       setLoading(false);
