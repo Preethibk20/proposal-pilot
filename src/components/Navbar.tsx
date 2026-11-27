@@ -36,6 +36,7 @@ export function Navbar({ agencyName }: NavbarProps) {
           <nav className="flex items-center gap-1">
             <Link
               href="/dashboard"
+              prefetch={false}
               className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 pathname.startsWith("/dashboard") || pathname.startsWith("/proposals")
                   ? "bg-slate-100 text-slate-900"
@@ -47,6 +48,7 @@ export function Navbar({ agencyName }: NavbarProps) {
             </Link>
             <Link
               href="/settings"
+              prefetch={false}
               className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 pathname.startsWith("/settings")
                   ? "bg-slate-100 text-slate-900"

@@ -145,6 +145,7 @@ export function DashboardClient({ proposals, appUrl }: DashboardClientProps) {
                     <td className="px-5 py-4 font-medium text-slate-900">
                       <Link
                         href={`/proposals/${proposal.id}/edit`}
+                        prefetch={false}
                         className="hover:text-indigo-600"
                       >
                         {proposal.title}
@@ -192,6 +193,7 @@ export function DashboardClient({ proposals, appUrl }: DashboardClientProps) {
                         )}
                         <Link
                           href={`/proposals/${proposal.id}/edit`}
+                          prefetch={false}
                           className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
                         >
                           Open
