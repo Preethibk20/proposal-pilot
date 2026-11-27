@@ -1,9 +1,10 @@
+import { cache } from "react";
 import crypto from "crypto";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "./supabase/server";
 import type { Agency } from "./types";
 
-export async function getAuthenticatedAgency(): Promise<Agency | null> {
+export const getAuthenticatedAgency = cache(async (): Promise<Agency | null> => {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -38,7 +39,7 @@ export async function getAuthenticatedAgency(): Promise<Agency | null> {
 
   if (error || !created) return null;
   return created as Agency;
-}
+});
 
 export async function requireAgency(): Promise<Agency> {
   const agency = await getAuthenticatedAgency();
