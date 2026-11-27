@@ -31,22 +31,22 @@ export async function middleware(request: NextRequest) {
   });
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const pathname = request.nextUrl.pathname;
   const isProtected = PROTECTED_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix)
   );
 
-  if (isProtected && !user) {
+  if (isProtected && !session) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  if ((pathname === "/login" || pathname === "/signup") && user) {
+  if ((pathname === "/login" || pathname === "/signup") && session) {
     const dashboardUrl = request.nextUrl.clone();
     dashboardUrl.pathname = "/dashboard";
     return NextResponse.redirect(dashboardUrl);
